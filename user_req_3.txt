@@ -1,0 +1,66 @@
+<USER_REQUEST>
+# ECOSENTINEL — IMPLEMENTATION REPAIR, MAP/DATA ACTIVATION, AVATAR ASSISTANT AND FULL FEATURE AUDIT
+
+You are continuing work in the **existing EcoSentinel repository**. This is a repair, integration and quality-assurance task. Do not recreate the application from scratch, discard working functionality, or replace working backend logic with a new static frontend.
+
+The existing application currently has important problems:
+
+1. The mascot behaves like a small emoji/icon rather than an independent, movable assistant.
+2. Clicking the mascot should open the AI assistant directly, but AI chat is currently exposed as a separate tab/page.
+3. The startup introduction should automatically guide users around the actual application, with the mascot moving between interface areas and speaking.
+4. The map does not load correctly.
+5. Environmental data and visual layers do not appear to be genuinely functional.
+6. There is no convincing side-by-side historical-versus-current comparison.
+7. Some features described in the EcoSentinel plan may be missing, partially implemented or only represented by mock UI.
+8. A standalone “N” symbol in the upper-left/left navigation area is unwanted.
+9. Some UI elements overlap or compete for screen space.
+
+Your job is to inspect the real codebase, determine the causes, repair the application, and demonstrate the implemented functionality through automated and manual tests.
+
+**Do not claim a feature is fixed merely because its page loads or a button looks correct. Prove that the underlying action works.**
+
+---
+
+# PHASE 1 — AUDIT THE EXISTING PROJECT BEFORE MODIFYING IT
+
+## 1. Inspect the repository
+
+Inspect the existing source code, routes, components, service modules, API endpoints, database models, migrations, environment files, static assets, existing tests and development scripts.
+
+Identify the actual frontend and backend technologies in use before making changes.
+
+Do not assume the existing repository exactly matches the initial architectu
+<truncated 28080 bytes>
+TATIONS.md`
+- `docs/MAP_AND_DATA_VALIDATION.md`
+
+For each test, record pass/fail/blocked and the reason.
+
+If a test requires a missing credential, mark it blocked by that credential and demonstrate that the app handles the state safely. Do not convert blocked live-data tests into fake passing tests by switching invisibly to replay data.
+
+## 34. Final instructions
+
+Continue working in the current repository.
+
+Do not stop at an implementation plan. Diagnose the current faults, edit the code, run the app, reproduce and fix the problems, execute automated tests, inspect the screenshots, and update the feature audit.
+
+If a feature already works, preserve it and test it. If it is missing, implement it. If it cannot work without external credentials, implement the provider adapter, clear health/status handling and documented setup path.
+
+Do not delete current app data. Do not overwrite supplied mascot images. Do not introduce secrets. Do not invent environmental results or claim external services are connected when they are not.
+
+**Your final deliverable must be the repaired running application and an honest audit of the implemented features—not merely a statement that the work is done.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-13T11:05:05+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\Lenovo\Desktop\EcoSentinal\scripts\seed_demo.py (LANGUAGE_PYTHON)
+Cursor is on line: 17
+Other open documents:
+- c:\Users\Lenovo\Desktop\EcoSentinal\scripts\seed_demo.py (LANGUAGE_PYTHON)
+- c:\Users\Lenovo\Desktop\EcoSentinal\backend\.env (LANGUAGE_UNSPECIFIED)
+- c:\Users\Lenovo\Desktop\EcoSentinal\.gitignore (LANGUAGE_UNSPECIFIED)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.8 Flash (Low) to Claude Sonnet 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

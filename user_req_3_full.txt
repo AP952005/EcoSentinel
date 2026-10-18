@@ -1,0 +1,824 @@
+<USER_REQUEST>
+# ECOSENTINEL — IMPLEMENTATION REPAIR, MAP/DATA ACTIVATION, AVATAR ASSISTANT AND FULL FEATURE AUDIT
+
+You are continuing work in the **existing EcoSentinel repository**. This is a repair, integration and quality-assurance task. Do not recreate the application from scratch, discard working functionality, or replace working backend logic with a new static frontend.
+
+The existing application currently has important problems:
+
+1. The mascot behaves like a small emoji/icon rather than an independent, movable assistant.
+2. Clicking the mascot should open the AI assistant directly, but AI chat is currently exposed as a separate tab/page.
+3. The startup introduction should automatically guide users around the actual application, with the mascot moving between interface areas and speaking.
+4. The map does not load correctly.
+5. Environmental data and visual layers do not appear to be genuinely functional.
+6. There is no convincing side-by-side historical-versus-current comparison.
+7. Some features described in the EcoSentinel plan may be missing, partially implemented or only represented by mock UI.
+8. A standalone “N” symbol in the upper-left/left navigation area is unwanted.
+9. Some UI elements overlap or compete for screen space.
+
+Your job is to inspect the real codebase, determine the causes, repair the application, and demonstrate the implemented functionality through automated and manual tests.
+
+**Do not claim a feature is fixed merely because its page loads or a button looks correct. Prove that the underlying action works.**
+
+---
+
+# PHASE 1 — AUDIT THE EXISTING PROJECT BEFORE MODIFYING IT
+
+## 1. Inspect the repository
+
+Inspect the existing source code, routes, components, service modules, API endpoints, database models, migrations, environment files, static assets, existing tests and development scripts.
+
+Identify the actual frontend and backend technologies in use before making changes.
+
+Do not assume the existing repository exactly matches the initial architecture prompt. Preserve sound working code and adapt to the repository's actual structure.
+
+Inspect in particular:
+
+- The MapLibre/Leaflet map initialization and CSS.
+- Map container dimensions and responsive layouts.
+- Base-map style URLs and tile request failures.
+- Environmental data-provider modules.
+- Earth Engine authentication and map-tile handling.
+- The local AI/Ollama integration.
+- The local TTS/Piper service.
+- FER creation and report persistence.
+- Zone A/Zone B calculations.
+- Challenge This Finding.
+- Watchtower plans and monitoring jobs.
+- The mascot assets and animation logic.
+- AI chat routing and current UI placement.
+- First-login tutorial/progress storage.
+- Database persistence and authentication.
+- PDF/report generation.
+- Existing Playwright and backend tests.
+
+Run the application and inspect browser console errors, server logs, network requests and failed API responses. Use the available browser automation tools or Playwright to reproduce the map failure and other UI problems.
+
+### Mandatory audit document
+
+Create or update:
+
+`docs/FEATURE_AUDIT.md`
+
+For every planned feature, record:
+
+- Feature name.
+- Current status: `WORKING`, `PARTIAL`, `BROKEN`, `MISSING`, or `BLOCKED`.
+- Frontend implementation.
+- Backend/service implementation.
+- Data provider used.
+- Test performed.
+- Evidence of the test.
+- Outstanding limitations.
+- Repair performed.
+- Final retest result.
+
+Do not mark features as working based only on code inspection. Run a test or show real execution evidence.
+
+Do not delete user data, recreate the SQLite database from scratch, reset authentication records or replace the replay fixture unless you have safely backed it up.
+
+---
+
+# PHASE 2 — FIX THE MAP FIRST
+
+## 2. Diagnose why the map does not load
+
+Treat this as the highest-priority repair.
+
+Check and fix all relevant causes, including:
+
+- Map container has no explicit or inherited height.
+- Parent layout collapses to zero height.
+- Map initialization occurs before the DOM/container is ready.
+- MapLibre is initialized during server-side rendering rather than in a browser-only component.
+- Required MapLibre stylesheet is missing.
+- Invalid style URL or inaccessible tile endpoint.
+- Incorrect coordinate order.
+- Incorrect access token or missing provider configuration.
+- Tile CORS/network errors.
+- Map source/layer added before the style is ready.
+- Layer order hides the underlying imagery.
+- Map instance initialized more than once.
+- Map container does not receive resize events.
+- WebGL/browser issues.
+- CSP or mixed-content restrictions.
+- Backend environmental-layer endpoint errors.
+- Earth Engine authentication or expired tile-map IDs.
+- Frontend expects a different API response format from the backend.
+- Invalid raster source tile URL or token handling.
+
+Add useful logging and clear UI error messages.
+
+Do not hide map errors behind an endless loading spinner.
+
+## 3. Establish a reliable base map
+
+Use MapLibre GL JS, unless the current implementation has a good reason to retain an equivalent mapping library.
+
+For the initial no-key basemap, test this style:
+
+`https://tiles.openfreemap.org/styles/liberty`
+
+Official integration guide:
+
+`https://openfreemap.org/quick_start/`
+
+Ensure the style actually loads in the running app before proceeding with environmental overlays.
+
+Requirements:
+
+- Import the correct MapLibre CSS into the frontend.
+- Use a browser-only map component.
+- Give the map a stable container height and width.
+- Add resize handling when opening side panels or resizing the viewport.
+- Handle map load/error events.
+- Preserve visible map attribution.
+- Provide zoom, pan, reset, fit-to-project and layer controls.
+- Show a map error panel with a retry action when necessary.
+- Test on a fresh browser session.
+- Test the map on both desktop and mobile-sized viewports.
+
+The base map and the environmental analysis overlays are different things. A working street map alone does not mean that environmental data analysis works.
+
+If OpenFreeMap is unavailable, provide a configurable alternative style/provider. Do not hard-code a private token. Do not violate the basemap provider's usage policy.
+
+---
+
+# PHASE 3 — IMPLEMENT REAL ENVIRONMENTAL VISUAL LAYERS
+
+## 4. Create a proper environmental layer system
+
+Implement a reusable layer catalogue. Users must be able to enable or disable individual layers, see their legends and inspect their data source and date.
+
+At minimum, the interface should offer the following choices:
+
+1. **Base map:** geographic reference and project location.
+2. **Satellite true colour:** a real satellite-derived RGB image for the selected date or period.
+3. **Vegetation / NDVI:** a calculated vegetation-index layer, based on the actual source bands.
+4. **Water / NDWI or water mask:** a supported water-related visualization.
+5. **Land cover:** a real source-backed land-cover layer when configured.
+6. **Historical change:** a difference or change-candidate layer derived from the selected comparison.
+7. **Project boundary:** declared/proposed/approved Zone A.
+8. **Shadow footprint:** Zone B geometry and surrounding investigation context.
+9. **Candidate findings:** the actual feature geometry and measurements from an analysis run.
+10. **Optional contextual layers:** rainfall, fire, protected-area boundaries, terrain or other verified data where appropriate.
+
+Some layers may require a configured provider. An unavailable layer must be visibly disabled with an explanation. Do not present the absence of a layer as an empty environmental result.
+
+## 5. Environmental layer behaviour
+
+Every layer must have:
+
+- A name and description.
+- A real data source or clearly labelled replay source.
+- Data acquisition date or date range where applicable.
+- Provider retrieval/processing time where available.
+- Layer-specific legend and units.
+- Opacity control where appropriate.
+- An explicit source/availability status.
+- A known limitations section.
+- A loading state and useful error state.
+
+Toggle actions must add, remove or change the actual corresponding source/layer on the map.
+
+Do not use CSS backgrounds, decorative SVGs, random polygons or screenshots of maps as substitutes for data-backed layers.
+
+Do not display a vegetation index unless the underlying raster values and bands used for the index are known. Do not display a historical change layer unless it was computed from identifiable observations or is prominently labelled as a replay visualization.
+
+## 6. Real environmental data integration
+
+Use the existing Earth Engine implementation if it works. Repair it rather than creating a parallel connector unnecessarily.
+
+If the repository does not yet implement a functioning Earth Engine path, create one clean provider adapter using the official Python Earth Engine API.
+
+For the initial live satellite comparison, use the Sentinel-2 surface-reflectance harmonized dataset:
+
+`COPERNICUS/S2_SR_HARMONIZED`
+
+Official dataset reference:
+
+`https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED`
+
+Requirements:
+
+1. Validate the requested area of interest.
+2. Validate the requested historical and comparison periods.
+3. Query real available source observations.
+4. Apply suitable quality masks.
+5. Record the source IDs and actual acquisition dates.
+6. Record the usable observation count and coverage.
+7. Compute the supported index or composite through deterministic processing.
+8. Produce the map visualization layer and numerical result.
+9. Persist the analysis configuration and results.
+10. Return source metadata, dates, status and errors to the frontend.
+11. Render the result through the working MapLibre layer system.
+12. Clearly distinguish live data from replay data.
+
+If Earth Engine is not configured, show an actionable integration status and use an explicitly labelled replay case. The application must remain usable without cloud credentials.
+
+Do not invent source IDs, acquisition dates, raster values, percentage changes, area measurements or environmental findings.
+
+### Map-tile security and expiry
+
+If Earth Engine map IDs or temporary tile credentials are used, manage them through the backend. Do not expose service-account credentials or private tokens in the frontend.
+
+Handle expired tile identifiers by refreshing the relevant map visualization through the configured provider and reloading the source safely. Earth Engine's map APIs document the relationship between map IDs and tile requests, including the temporary nature of map identifiers.
+
+Reference:
+
+`https://developers.google.com/earth-engine/apidocs/ee-data-getmapid`
+
+`https://developers.google.com/earth-engine/apidocs/ee-data-gettileurl`
+
+## 7. Environmental calculations
+
+Use deterministic processing for numeric and geospatial work.
+
+For NDVI from the correct Sentinel-2 bands:
+
+`NDVI = (B8 - B4) / (B8 + B4)`
+
+Handle invalid pixels and zero/invalid denominators correctly.
+
+The interface must not call an NDVI difference “forest destruction” without further evidence and a validated method.
+
+Keep method thresholds configurable. Avoid a universal hard-coded rule presented as scientifically valid for every ecosystem or season.
+
+Report separately:
+
+- No candidate change identified by the configured method.
+- Insufficient usable data.
+- Provider unavailable.
+- Analysis failed.
+- Candidate change identified.
+
+No usable data must never be reported as no environmental change.
+
+---
+
+# PHASE 4 — PROPER SIDE-BY-SIDE HISTORICAL COMPARISON
+
+## 8. Build a functioning compare mode
+
+Create a dedicated **Past vs Current** comparison mode.
+
+The interface should display two synchronized map panels.
+
+### Left panel — Past
+
+- User-selectable baseline period.
+- Actual historical observation dates.
+- Historical RGB or selected analytical layer.
+- Project boundary.
+- Data quality and source information.
+
+### Right panel — Current / comparison period
+
+- User-selectable comparison period.
+- Actual current-period observation dates.
+- Matching RGB or selected analytical layer.
+- The same project boundary and geometry.
+- Data quality and source information.
+
+Both maps must:
+
+- Share the same initial geographic extent and zoom.
+- Support synchronized pan/zoom where feasible.
+- Use the same AOI.
+- Allow switching the displayed layer, such as true colour or NDVI, in both panels.
+- Show actual dates rather than simply labelling one side “current.”
+- Handle different available acquisition dates honestly.
+- Display an explicit limitation if the selected periods are not comparable.
+
+Add a swipe comparison as an optional additional view, not as a replacement for side-by-side comparison.
+
+## 9. Compare results panel
+
+Show relevant metrics only when calculated from actual data:
+
+- Requested date range.
+- Actual historical date range.
+- Actual comparison date range.
+- Number of usable observations.
+- Usable coverage/quality statistics.
+- Chosen analysis method.
+- Metric difference.
+- Candidate change area if supported.
+- Data-source IDs.
+- Interpretation and limitations.
+
+Do not populate these metrics using arbitrary example values in live mode.
+
+---
+
+# PHASE 5 — REPAIR SHADOW FOOTPRINT INTELLIGENCE
+
+## 10. Zone A and Zone B
+
+Ensure Zone A and Zone B are real, independently displayed geometries.
+
+Zone A:
+- The declared/proposed/approved core project footprint.
+- Its source and status must be stored.
+- Do not silently consider an applicant-uploaded polygon officially approved.
+
+Zone B:
+- A configurable surrounding investigation area.
+- Must record whether it came from a user-drawn polygon, uploaded polygon or a defined buffer.
+- Must store the generation parameters and reason.
+- No universal fixed buffer for every project.
+
+Allow a user to configure the Zone B distance or upload/draw a separate geometry.
+
+If the existing system computes buffers incorrectly, repair the coordinate reference system handling before calculating distances or area.
+
+## 11. Candidate-change visualization
+
+Display the actual calculated candidate polygon, not an unrelated marker.
+
+For each finding, show:
+
+- Finding ID.
+- Zone classification.
+- Source observations and actual dates.
+- Area and units.
+- Method/threshold version.
+- Valid coverage.
+- Evidence quality and limitations.
+- Supporting/counter evidence where available.
+- “Challenge This Finding.”
+- Create case and review actions.
+
+A change outside the project boundary is not automatically illegal activity or a permit violation.
+
+---
+
+# PHASE 6 — MAKE THE AVATAR AN INDEPENDENT MOVABLE AI ASSISTANT
+
+## 12. Remove the emoji-like presentation
+
+The EcoSentinel mascot must use the supplied high-quality transparent PNG assets.
+
+Find these exact names, case-insensitively if necessary:
+
+- `general.png`
+- `Hi.png`
+- `Scanner.png`
+- `Investigator.png`
+- `Processing.png`
+- `towardsleftcycling.png`
+- `towardsrightcycling.png`
+- `Success.png`
+
+Locate the actual files recursively within the project. Organize them into a dedicated public asset directory, preserving their content and aspect ratio.
+
+If an asset is missing, do not generate a random replacement or pretend it exists. Use a graceful fallback and record the missing filename.
+
+The avatar must be an actual character image, not an emoji, generic icon or circular thumbnail.
+
+Preserve transparent backgrounds, proportions and character details. Do not stretch the images.
+
+## 13. Persistent movable character
+
+Create a dedicated `EcoSentinelAssistant` component mounted at the application shell level so it remains available across authenticated pages.
+
+Normal mode requirements:
+
+- Render the transparent mascot at a suitable size and fixed viewport position.
+- Allow users to drag it to a different safe position.
+- Persist its chosen position locally or in the user preference record.
+- Prevent dragging from blocking normal interactions unnecessarily.
+- Keep the character above page backgrounds but below critical modal dialogs.
+- Keep it within viewport bounds.
+- Ensure it does not cover essential controls, map navigation, form submission buttons or text.
+- Provide a small movement/drag affordance and sensible touch behaviour.
+- Respect reduced-motion preferences.
+- Use the state image appropriate to the current assistant activity.
+- Do not make it bounce or move constantly when idle.
+
+On navigation to a new page, it should remain present and stay where the user placed it unless the active guided-tour step deliberately moves it.
+
+## 14. Clicking the mascot opens the assistant
+
+**There should not be a separate top-level AI Chat tab/page as the primary way to access chat.**
+
+Clicking the mascot opens a conversational assistant panel anchored to the character.
+
+Requirements:
+
+- Chat panel appears beside/above the mascot and avoids viewport edges.
+- Panel adapts to mobile sizes.
+- It shows recent conversation messages.
+- It provides a text input and Send button.
+- Enter sends; Shift+Enter adds a newline where appropriate.
+- It has close/minimize controls.
+- The user can resize or reposition the panel only if that is consistent with the existing design.
+- It preserves relevant conversation history for the authenticated user and current project/case.
+- It supports a “new conversation” action.
+- It offers useful context-aware starter questions.
+- It displays model/provider status.
+- It renders source citations as clickable references when answering case questions.
+- It distinguishes generated suggestions from calculated facts.
+- It uses the real configured Ollama model.
+- It handles Ollama unavailable/timeout errors without pretending a response was generated.
+- It has a local-demo response path only if clearly labelled as replay/demo.
+
+The chat must be context-aware:
+
+- On the dashboard, answer general EcoSentinel/how-to questions.
+- On the FER page, use the active FER and its source records.
+- On the map/finding page, use the selected region/finding and supporting observations.
+- On the case page, use the active case history and evidence.
+- On settings, explain integration status using actual backend health data.
+
+The assistant must not expose records the current user is not authorized to access.
+
+Remove the separate chat navigation item if it is redundant. Preserve an optional full conversation history/settings screen only if it serves a clearly distinct need; the primary AI interaction must be mascot-click initiated.
+
+## 15. Assistant state machine
+
+Use explicit states rather than changing images arbitrarily:
+
+- `idle` → `general.png`
+- `greeting` → `Hi.png`
+- `scanning` → `Scanner.png`
+- `investigating` → `Investigator.png`
+- `processing` → `Processing.png`
+- `travelling_left` → `towardsleftcycling.png`
+- `travelling_right` → `towardsrightcycling.png`
+- `success` → `Success.png`
+
+Connect the state to real activity:
+
+- Beginning FER generation: processing.
+- Fetching/inspecting supported data: scanning.
+- Examining a finding: investigator.
+- Completing a valid operation: success.
+- Moving between guided-tour elements: appropriate cycling pose.
+- Idle: general.
+
+Avoid claiming success if the corresponding backend operation failed.
+
+---
+
+# PHASE 7 — FIRST-LOGIN ANIMATED WALKTHROUGH
+
+## 16. Auto-start tour behaviour
+
+Implement the guided walkthrough as a first-class application feature, not a static modal.
+
+On the user's first authenticated session, after the interface is ready, offer and then start the animated introduction according to the existing onboarding design.
+
+The tour should be skippable. It must not trap the user or block the whole application permanently.
+
+Persist user completion and progress. Do not auto-play the entire tour on every subsequent login. Provide “Replay guided tour” in Help/Settings.
+
+## 17. Mascot movement during the tour
+
+During the walkthrough:
+
+1. Navigate to the appropriate page/section.
+2. Locate its actual target anchor.
+3. Scroll the target into view if needed.
+4. Move the mascot to the target using the supplied directional cycling pose.
+5. Switch to the correct stationary activity pose.
+6. Highlight the relevant element.
+7. Display step title, explanation and narration captions.
+8. Play the local Piper speech for that step.
+9. Wait for user Next/Continue where the step requires interaction.
+10. Move to the next location using the appropriate direction pose.
+
+Use stable anchor attributes such as:
+
+- `data-tour="dashboard"`
+- `data-tour="project-intake"`
+- `data-tour="fer-summary"`
+- `data-tour="environmental-map"`
+- `data-tour="shadow-footprint"`
+- `data-tour="finding-challenge"`
+- `data-tour="watchtower"`
+- `data-tour="report-export"`
+
+Do not target fragile CSS class names that change between renders.
+
+## 18. Narration and controls
+
+The tour must include:
+
+- Local TTS narration.
+- Readable captions/transcript.
+- Play/Pause.
+- Back/Next.
+- Skip.
+- Restart.
+- Progress indicator.
+- Tour-complete confirmation.
+- Reduced-motion alternative.
+- Safe fallback if the audio engine is unavailable.
+
+Do not begin audio until the browser permits playback or the user presses Play.
+
+The narrator must describe the actual screen and feature, not generic filler.
+
+---
+
+# PHASE 8 — REMOVE THE “N” SYMBOL AND FIX OVERLAPPING ELEMENTS
+
+## 19. Remove the unwanted N symbol
+
+Inspect the header, sidebar, logo components, application icon and branding.
+
+Remove the standalone “N” symbol in the left/upper-left area that the user identified as unwanted.
+
+Retain a proper EcoSentinel wordmark/title as appropriate. Do not leave an empty placeholder, broken logo image or misaligned gap after removing the symbol.
+
+Search for duplicate branding implementations and consolidate them into one consistent brand component.
+
+Do not remove the EcoSentinel mascot or useful navigation icons.
+
+## 20. Audit overlap across the entire application
+
+Inspect all primary routes at desktop, tablet and mobile viewport sizes.
+
+Find and fix:
+
+- Overlapping title/header/branding elements.
+- Sidebar covering content.
+- Floating assistant covering critical buttons.
+- Chat panel extending beyond viewport.
+- Mascot obscuring map controls.
+- Map layer controls overlapping the legend.
+- Fixed banners overlapping the page header.
+- Tour popovers clipped by viewport edges.
+- FER text overflowing report cards.
+- Side-by-side maps collapsing or overlapping.
+- Buttons escaping form panels.
+- Horizontal page overflow.
+- Modals hidden behind maps.
+- Dropdowns hidden by parent overflow.
+- Mobile bottom navigation colliding with the assistant.
+- Z-index conflicts.
+- Excessive fixed-position elements.
+
+Create a consistent layout/z-index scheme rather than patching individual conflicts with arbitrary extreme z-index values.
+
+Capture Playwright screenshots at, at minimum:
+
+- 1440×900.
+- 1280×800.
+- 1024×768.
+- 768×1024.
+- 390×844.
+
+Test with the assistant closed, assistant open and guided tour running.
+
+No critical UI controls should overlap. Fix the cause, not merely the screenshot.
+
+---
+
+# PHASE 9 — AUDIT AND REPAIR EVERY PREVIOUSLY PLANNED FEATURE
+
+## 21. FER
+
+Verify that:
+
+- Project intake form works.
+- Conditional fields validate.
+- Geometry upload/drawing works.
+- Project persists in SQLite.
+- FER generates after submission.
+- FER has a version and source provenance.
+- Source document citations point to the correct pages.
+- Environmental data gaps are visible.
+- Report export works.
+- New runs create new report versions without silently overwriting past evidence.
+
+## 22. Environmental indicators and data sources
+
+Verify the available vegetation, water, land cover and change-analysis paths.
+
+Every layer must be either:
+
+- Working with actual configured data.
+- A clearly labelled replay/synthetic layer.
+- Disabled with an explanation of what's missing.
+
+Remove any fake numerical indicators or cards that claim live analysis without a real source/run.
+
+## 23. Shadow Footprint Intelligence
+
+Verify:
+
+- Zone A geometry and source/status.
+- Zone B configuration and recorded generation method.
+- Correct coordinate reference systems.
+- Deterministic area/distance calculations.
+- Candidate finding geometry.
+- Past/current comparison.
+- Source metadata and dates.
+- Challenge This Finding linkage.
+
+## 24. Challenge This Finding
+
+Verify:
+
+- Supporting evidence.
+- Contradictory evidence.
+- Alternative explanations.
+- Uncertainty and limitations.
+- Unresolved questions.
+- Suggested next checks.
+- Source citations.
+- Persistent review state.
+
+Ensure the model cannot edit measured values or invent evidence.
+
+## 25. Watchtower
+
+Verify:
+
+- Monitoring-plan persistence.
+- Manual Run Check Now.
+- Real provider availability/error status.
+- Job state and timestamps.
+- Repeat-run idempotency.
+- Case event creation/update.
+- Insufficient-data status.
+- No duplicate cases from retries.
+- Monitoring can continue after a finding is created.
+
+Do not present replay jobs as live scheduled monitoring.
+
+## 26. Permit-to-Pixel
+
+Verify:
+
+- PDF text extraction.
+- Page-level condition citations.
+- Structured extraction.
+- Human confirmation.
+- Confirmed-condition linkage.
+- Supported calculations.
+- Clear distinction between measured observation and legal conclusion.
+
+If the complete regulatory rule engine is not implemented, mark that feature partial and document the supported scope.
+
+## 27. Chat, TTS and avatar tour
+
+Verify:
+
+- Chat is opened by clicking the mascot.
+- Current case context is used.
+- Citations link to real evidence.
+- Unauthorized data cannot be retrieved.
+- Piper can create and play audio.
+- Tour narration and captions correspond to each step.
+- Avatar moves to the actual target elements.
+- Tour progress is persisted.
+- Tour is replayable from Help.
+- Missing audio assets/providers produce graceful fallbacks.
+
+## 28. Authentication, database and reports
+
+Verify:
+
+- Register/login/logout.
+- Password hashing and session security.
+- Role-based authorization.
+- Project ownership.
+- SQLite migrations.
+- Report generation.
+- Download permissions.
+- Case history.
+- Export data matches the UI.
+- Database backup works if already implemented.
+
+## 29. Google Cloud architecture page
+
+Keep the distinction clear between:
+
+- Locally running components.
+- Real external providers currently connected.
+- Future Google Cloud deployment mappings.
+
+Do not advertise Gemini, Cloud Run, Cloud SQL, Google Cloud Text-to-Speech or other services as connected if the project is actually using Ollama, Piper and SQLite.
+
+---
+
+# PHASE 10 — AUTOMATED TESTS AND COMPLETION GATES
+
+## 30. Repair before adding cosmetic features
+
+Prioritize work in this order:
+
+1. Make the base map load.
+2. Make environmental data providers return valid data/status.
+3. Make environmental layers display real/replay data correctly.
+4. Make past/current comparison functional.
+5. Make Zone A/Zone B and candidate finding interactions work.
+6. Fix avatar movement and click-to-chat.
+7. Fix the startup guided tour and TTS.
+8. Remove the unwanted N symbol.
+9. Fix responsive layouts and overlap.
+10. Validate the rest of the planned features.
+
+Do not spend time polishing minor animations while maps and data are broken.
+
+## 31. Automated tests
+
+Run existing tests first. Add missing tests.
+
+### Backend
+
+- Data provider health.
+- Provider query errors.
+- Earth Engine unconfigured status.
+- Data metadata/schema validation.
+- Geometry validation.
+- Calculation correctness.
+- FER generation/versioning.
+- Finding challenge output validation.
+- Case persistence.
+- Monitoring idempotency.
+- Authorization.
+- Report export.
+- AI unavailable fallback.
+- TTS unavailable fallback.
+
+### Frontend / Playwright
+
+- Dashboard loads.
+- Map loads and reaches its load-ready state.
+- Base map and attribution are visible.
+- Environmental layer controls add/remove the intended layers.
+- Side-by-side comparison uses the correct dates and selected layer.
+- Zone A/Zone B overlays render.
+- Finding selection opens the correct details.
+- Challenge This Finding displays sourced content.
+- Mascot is rendered from the actual PNG assets.
+- Avatar is draggable and remains in viewport.
+- Clicking the mascot opens chat; there is no redundant primary Chat tab.
+- Sending a question produces a real model response or explicit provider-unavailable status.
+- Tour auto-start/progress/skip/replay work.
+- Voice playback works or gives an actionable fallback.
+- N symbol is absent from branding.
+- No overlapping controls on target viewports.
+- FER export works.
+- Project/case access is protected.
+
+## 32. Map-specific acceptance tests
+
+The map is not considered repaired until:
+
+- The map container has nonzero dimensions.
+- The base style request succeeds.
+- Expected tile/style resources are requested and loaded.
+- No fatal MapLibre or WebGL error remains.
+- The map responds to pan/zoom.
+- Project boundary renders when present.
+- Layer toggles operate on real MapLibre source/layer state.
+- Environmental overlays are distinguishable from the base map.
+- Historical/current panels display the correct source periods.
+- Layer legends and source dates match the actual response.
+- Failed provider requests are visible and not interpreted as environmental findings.
+
+Use real browser network data and application logs as evidence. Do not report “map passed” simply because the map component mounted.
+
+## 33. Report final test results
+
+Create/update:
+
+- `docs/FEATURE_AUDIT.md`
+- `docs/REPAIR_LOG.md`
+- `docs/KNOWN_LIMITATIONS.md`
+- `docs/MAP_AND_DATA_VALIDATION.md`
+
+For each test, record pass/fail/blocked and the reason.
+
+If a test requires a missing credential, mark it blocked by that credential and demonstrate that the app handles the state safely. Do not convert blocked live-data tests into fake passing tests by switching invisibly to replay data.
+
+## 34. Final instructions
+
+Continue working in the current repository.
+
+Do not stop at an implementation plan. Diagnose the current faults, edit the code, run the app, reproduce and fix the problems, execute automated tests, inspect the screenshots, and update the feature audit.
+
+If a feature already works, preserve it and test it. If it is missing, implement it. If it cannot work without external credentials, implement the provider adapter, clear health/status handling and documented setup path.
+
+Do not delete current app data. Do not overwrite supplied mascot images. Do not introduce secrets. Do not invent environmental results or claim external services are connected when they are not.
+
+**Your final deliverable must be the repaired running application and an honest audit of the implemented features—not merely a statement that the work is done.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-13T11:05:05+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\Lenovo\Desktop\EcoSentinal\scripts\seed_demo.py (LANGUAGE_PYTHON)
+Cursor is on line: 17
+Other open documents:
+- c:\Users\Lenovo\Desktop\EcoSentinal\scripts\seed_demo.py (LANGUAGE_PYTHON)
+- c:\Users\Lenovo\Desktop\EcoSentinal\backend\.env (LANGUAGE_UNSPECIFIED)
+- c:\Users\Lenovo\Desktop\EcoSentinal\.gitignore (LANGUAGE_UNSPECIFIED)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.8 Flash (Low) to Claude Sonnet 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

@@ -1,0 +1,36 @@
+﻿# Backend .dockerignore
+# Keeps Cloud Build context small and prevents secrets/data leaking into the image
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Local database files (Cloud Run uses ephemeral storage; use Cloud SQL in production)
+data/ecosentinel.db
+data/ecosentinel.db-shm
+data/ecosentinel.db-wal
+
+# Secrets - inject via Cloud Run env vars / Secret Manager at runtime
+.env
+.env.*
+data/secrets/
+
+# Test artifacts
+.pytest_cache/
+tests/__pycache__/
+*.pyc
+__pycache__/
+
+# Alembic compiled
+alembic/versions/*.pyc
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,25 @@
+# EcoSentinel — Google Cloud AI Builder Cup 2026 Submission Checklist
+
+- [x] **Technical Merit & GenAI (40%):**
+  - Integrated official Google GenAI SDK (`google-genai`) with `gemini-3.8-flash`.
+  - Configured low-thinking reasoning (`thinking_level="low"`).
+  - Schema-constrained output validation via Pydantic (`ProofLoopSchema`).
+  - Deterministic geospatial calculations via Python Shapely/PyProj.
+  - Transparent error handling and honest fallback to local Ollama and replay modes.
+- [x] **Problem Alignment & Impact (25%):**
+  - Targets Sustainability & Social Impact theme.
+  - Automated screening of project applications (FER) with core Zone A and surveillance Zone B buffers.
+  - Enables regulatory officers to prioritize field inspection resources effectively.
+- [x] **Innovation & Creativity (25%):**
+  - ProofLoop™ signature counter-evidence engine examines alternative explanations and surfaces Next-Best Evidence.
+  - Multi-temporal 12-point chronological scrubber with real Sentinel-2 composite checkpoints.
+- [x] **User Experience & Solution Design (10%):**
+  - Interactive round globe with geodesic buffer calculation.
+  - Movable, persistent avatar assistant across all pages.
+  - Side-by-side multi-temporal baseline vs latest comparison view.
+  - Downloadable visual evidence PDF reports generated via ReportLab.
+  - Continuous surveillance scheduling via Watchtower.
+- [x] **Verification & Packaging:**
+  - Zero test failures across backend test suite.
+  - Successful Next.js production build (`npm run build`).
+  - Full documentation suite (`docs/`).

@@ -1,0 +1,110 @@
+# EcoSentinel .gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.turbo/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Data / local storage (keep structure, ignore data files)
+data/ecosentinel.db
+data/ecosentinel.db-shm
+data/ecosentinel.db-wal
+data/uploads/*
+!data/uploads/.gitkeep
+data/exports/*
+!data/exports/.gitkeep
+data/audio_cache/*
+!data/audio_cache/.gitkeep
+data/piper_models/*
+!data/piper_models/.gitkeep
+data/secrets/
+
+# Alembic generated
+backend/alembic/versions/*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Coverage / test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+frontend/playwright-report/
+frontend/test-results/
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+service-account*.json
+credentials*.json
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+service-account*.json
+credentials*.json
