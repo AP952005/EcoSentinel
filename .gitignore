@@ -1,9 +1,115 @@
 # EcoSentinel .gitignore
 
-# Environment
+# ─── Environment & Secrets ───────────────────────────────────────
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+credentials*.json
+
+# ─── Python ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+
+# ─── Node / Next.js ──────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+frontend/out/
+.turbo/
+coverage/
+
+# ─── Databases (never commit live databases) ─────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db.bak
+backend/data/ecosentinel.db
+backend/data/ecosentinel.db-shm
+backend/data/ecosentinel.db-wal
+data/ecosentinel.db
+data/ecosentinel.db-shm
+data/ecosentinel.db-wal
+data/ecosentinel.db.bak
+
+# ─── Data / local storage (keep structure, ignore data files) ────
+data/uploads/*
+!data/uploads/.gitkeep
+data/exports/*
+!data/exports/.gitkeep
+data/audio_cache/*
+!data/audio_cache/.gitkeep
+data/piper_models/*
+!data/piper_models/.gitkeep
+data/secrets/
+
+# ─── Internal / AI agent files (never public) ────────────────────
+user_req*.txt
+user_req*.md
+IMPLEMENTATION_STATUS*.md
+IMPLEMENTATION_STATUS_AND_DEMO_GUIDE.md
+CURRENT_IMPLEMENTATION_REPORT.md
+docs/IMPLEMENTATION_AUDIT.md
+AGENTS.md
+frontend/AGENTS.md
+scratch_*.py
+generate_deck.py
+
+# ─── Stray root-level asset dumps ────────────────────────────────
+/general.png
+/Hi.png
+/Investigator.png
+/Processing.png
+/Scanner.png
+/Success.png
+/towardsleftcycling.png
+/towardsrightcycling.png
+/logo.png
+
+# ─── Duplicate root-level presentation ───────────────────────────
+/EcoSentinel_AI_Builder_Cup_Presentation.pptx
+
+# ─── Test/debug files ────────────────────────────────────────────
+frontend/public/map-test.html
+*.log
+logs/
+.coverage
+htmlcov/
+.pytest_cache/
+frontend/playwright-report/
+frontend/test-results/
+
+# ─── OS & IDE ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# ─── Alembic ─────────────────────────────────────────────────────
+backend/alembic/versions/*.pyc
 
 # Python
 __pycache__/
