@@ -36,6 +36,19 @@ Unlike a conventional satellite dashboard or chatbot, EcoSentinel's defining con
 
 > **Scientific boundary:** A change in satellite reflectance or vegetation index is not, by itself, proof of deforestation, illegal activity, intent, or regulatory non-compliance. Findings require source validation and human review.
 
+<p align="center">
+  <img
+    src=".github/readme/ecosentinel-intro.webp"
+    alt="EcoSentinel Environmental Problem Introduction"
+    width="100%"
+  />
+</p>
+
+<p align="center">
+  <i>A visual introduction to the environmental
+  challenges that inspired EcoSentinel ProofLoop.</i>
+</p>
+
 ## The Problem
 
 Environmental investigations often require switching between satellite catalogues, map viewers, GIS tools, project records, and reporting systems. This fragmentation makes it difficult to preserve the exact observations, calculations, and uncertainties behind a conclusion.
